@@ -21,6 +21,11 @@ get_level_1_data <- function(training_frame,
   dt <- as.data.table(training_frame)
 
   for(model_wrapper in model_wrappers){
+    #track progress with bar.
+    cat(paste0("Cross validating and training ", model_wrapper,
+               ". Each tick represents a cross validation.\n" ))
+    progress <- txtProgressBar(max = n_folds, width = n_folds, style = 3)
+
     #Each loop adds predictions for the fold under consideration, while all
     #subsequent folds have NA placeholders.  Each time the loop repeats the NA's
     #for the current fold are overwritten (by reference, thanks data.table!).
@@ -29,6 +34,8 @@ get_level_1_data <- function(training_frame,
       dt[fold_id == fold,
          (model_wrapper) := match.fun(model_wrapper)(training_frame = dt[fold_id != fold,],
                                                      validation_frame = dt[fold_id == fold,])]
+      setTxtProgressBar(progress, fold)
     }
+    close(progress)
   }
 }
