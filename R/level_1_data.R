@@ -12,6 +12,17 @@ get_cv_folds <- function(training_frame, n_folds){
 }
 
 
+#' Title
+#'
+#' @param training_frame
+#' @param response
+#' @param model_wrappers
+#' @param n_folds
+#' @import data.table
+#' @return
+#' @export
+#'
+#' @examples
 get_level_1_data <- function(training_frame,
                              response,
                              model_wrappers,
@@ -38,4 +49,7 @@ get_level_1_data <- function(training_frame,
     }
     close(progress)
   }
+  dt[,(setdiff(names(training_frame), response)) := NULL] #Remove original columns
+  setDF(dt)
+  return(dt)
 }
