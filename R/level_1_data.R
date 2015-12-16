@@ -1,4 +1,17 @@
-#Add CV folds to the input data frame.
+#' Add a cv folds column to a data frame.
+#'
+#' @param training_frame data frame, the frame to which to
+#' append the cv folds column
+#' @param n_folds integer, number of folds
+#'
+#' @return A data frame identical to training frame with one extra column
+#' called "fold_id" that gives the fold of each column.  Also, the attribute
+#' "cv_column" is added to indicate that a cv column has been defined.  If
+#' the "cv_column" attribute is already present, training_frame is returned
+#' unchanged.
+#' @export
+#'
+#' @examples
 get_cv_folds <- function(training_frame, n_folds){
   #Check to see if training_frame already has a CV column.  If not, add one.
   if(is.null(attributes(training_frame)$cv_column)){
@@ -12,7 +25,10 @@ get_cv_folds <- function(training_frame, n_folds){
 }
 
 
-#' Title
+#' Internal function to get level 1 data to stack on.
+#'
+#' This function does the work for get_level_1_data.  See the documentation
+#' for get_level_1_data for details on the functionality.
 #'
 #' @param training_frame
 #' @param response
@@ -20,13 +36,16 @@ get_cv_folds <- function(training_frame, n_folds){
 #' @param n_folds
 #' @import data.table
 #' @return
-#' @export
 #'
 #' @examples
-get_level_1_data <- function(training_frame,
-                             response,
-                             model_wrappers,
-                             n_folds = 5){
+.get_level_1_data <- function(training_frame,
+                              response,
+                              model_wrappers,
+                              testing_frame = NULL,
+                              n_folds = 5){
+  if(n_folds == 1 & is.null(testing_frame))
+    stop("If n_folds is 1, testing_frame must be provided.")
+
   #Add a folds column to keep track of CV folds if it's not present already.
   training_frame <- get_cv_folds(training_frame, n_folds = n_folds)
   dt <- as.data.table(training_frame)
@@ -42,9 +61,17 @@ get_level_1_data <- function(training_frame,
     #for the current fold are overwritten (by reference, thanks data.table!).
     #You can watch this process occur with the debugger.
     for(fold in 1:n_folds){
-      dt[fold_id == fold,
-         (model_wrapper) := match.fun(model_wrapper)(training_frame = dt[fold_id != fold,],
-                                                     validation_frame = dt[fold_id == fold,])]
+      #If n_folds is at least two, the validation frame will be the fold
+      #outside the training set.
+      if(n_folds != 1){
+        dt[fold_id == fold,
+           (model_wrapper) := match.fun(model_wrapper)(training_frame = dt[fold_id != fold,],
+                                                       validation_frame = dt[fold_id == fold,])]
+      } else {
+        dt[fold_id == fold,
+           (model_wrapper) := match.fun(model_wrapper)(training_frame = dt[fold_id != fold,],
+                                                       validation_frame = testing_frame)]
+      }
       setTxtProgressBar(progress, fold)
     }
     close(progress)
@@ -52,4 +79,22 @@ get_level_1_data <- function(training_frame,
   dt[,(setdiff(names(training_frame), response)) := NULL] #Remove original columns
   setDF(dt)
   return(dt)
+}
+
+get_level_1_data <- function(training_frame,
+                             testing_frame,
+                             response,
+                             model_wrappers,
+                             n_folds = 5){
+  if(!n_folds > 1)
+    stop("n_folds must be at least 2 for stacking to work correctly.")
+  level_1_training <- .get_level_1_data(training_frame =  training_frame,
+                                        response = response,
+                                        model_wrappers = model_wrappers,
+                                        n_folds = n_folds)
+  level_1_testing <- .get_level_1_data(training_frame = training_frame,
+                                       response = response,
+                                       model_wrappers = model_wrappers,
+                                       n_folds = 1,
+                                       testing_frame = testing_frame)
 }
