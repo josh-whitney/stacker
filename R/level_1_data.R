@@ -48,7 +48,7 @@ get_cv_folds <- function(training_frame, n_folds){
 
   #Add a folds column to keep track of CV folds if it's not present already.
   training_frame <- get_cv_folds(training_frame, n_folds = n_folds)
-  dt <- as.data.table(training_frame)
+  tf <- as.data.table(training_frame)
 
   for(model_wrapper in model_wrappers){
     #track progress with bar.
@@ -64,23 +64,35 @@ get_cv_folds <- function(training_frame, n_folds){
       #If n_folds is at least two, the validation frame will be the fold
       #outside the training set.
       if(n_folds != 1){
-        dt[fold_id == fold,
-           (model_wrapper) := match.fun(model_wrapper)(training_frame = dt[fold_id != fold,],
-                                                       validation_frame = dt[fold_id == fold,])]
+        tf[fold_id == fold,
+           (model_wrapper) := match.fun(model_wrapper)(training_frame = tf[fold_id != fold,],
+                                                       validation_frame = tf[fold_id == fold,])]
       } else {
-        dt[fold_id == fold,
-           (model_wrapper) := match.fun(model_wrapper)(training_frame = dt[fold_id != fold,],
+        tf[fold_id == fold,
+           (model_wrapper) := match.fun(model_wrapper)(training_frame = tf[fold_id != fold,],
                                                        validation_frame = testing_frame)]
       }
       setTxtProgressBar(progress, fold)
     }
     close(progress)
   }
-  dt[,(setdiff(names(training_frame), response)) := NULL] #Remove original columns
-  setDF(dt)
-  return(dt)
+  tf[,(setdiff(names(training_frame), response)) := NULL] #Remove original columns
+  setDF(tf)
+  return(tf)
 }
 
+#' Get level 1 training and testing data
+#'
+#' @param training_frame
+#' @param testing_frame
+#' @param response
+#' @param model_wrappers
+#' @param n_folds
+#'
+#' @return
+#' @export
+#'
+#' @examples
 get_level_1_data <- function(training_frame,
                              testing_frame,
                              response,
@@ -97,4 +109,5 @@ get_level_1_data <- function(training_frame,
                                        model_wrappers = model_wrappers,
                                        n_folds = 1,
                                        testing_frame = testing_frame)
+  list(level_1_training = level_1_training, level_1_testing = level_1_testing)
 }
