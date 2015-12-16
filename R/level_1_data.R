@@ -48,13 +48,19 @@ get_cv_folds <- function(training_frame, n_folds){
 
   #Add a folds column to keep track of CV folds if it's not present already.
   training_frame <- get_cv_folds(training_frame, n_folds = n_folds)
-  tf <- as.data.table(training_frame)
+  train <- as.data.table(training_frame)
+  test <- as.data.table(testing_frame)
 
   for(model_wrapper in model_wrappers){
     #track progress with bar.
-    cat(paste0("Cross validating and training ", model_wrapper,
-               ". Each tick represents a cross validation.\n" ))
+    if(n_folds != 1){
+      cat(paste0("Cross validating and training ", model_wrapper,
+                 ". Each tick represents a cross validation.\n" ))
+    } else {
+      cat(paste0("Generating level 1 data for test set using ", model_wrapper, "\n"))
+    }
     progress <- txtProgressBar(max = n_folds, width = n_folds, style = 3)
+
 
     #Each loop adds predictions for the fold under consideration, while all
     #subsequent folds have NA placeholders.  Each time the loop repeats the NA's
@@ -64,21 +70,27 @@ get_cv_folds <- function(training_frame, n_folds){
       #If n_folds is at least two, the validation frame will be the fold
       #outside the training set.
       if(n_folds != 1){
-        tf[fold_id == fold,
-           (model_wrapper) := match.fun(model_wrapper)(training_frame = tf[fold_id != fold,],
-                                                       validation_frame = tf[fold_id == fold,])]
+        train[fold_id == fold,
+              (model_wrapper) := match.fun(model_wrapper)(training_frame = train[fold_id != fold,],
+                                                          validation_frame = train[fold_id == fold,])]
       } else {
-        tf[fold_id == fold,
-           (model_wrapper) := match.fun(model_wrapper)(training_frame = tf[fold_id != fold,],
-                                                       validation_frame = testing_frame)]
+        test[, (model_wrapper) := match.fun(model_wrapper)(training_frame = train,
+                                                           validation_frame = testing_frame)]
       }
       setTxtProgressBar(progress, fold)
     }
     close(progress)
   }
-  tf[,(setdiff(names(training_frame), response)) := NULL] #Remove original columns
-  setDF(tf)
-  return(tf)
+  if(n_folds != 1){
+    train[,(setdiff(names(training_frame), response)) := NULL] #Remove original columns
+    setDF(train)
+    output <- train
+  } else {
+    test[,(setdiff(names(testing_frame), response)) := NULL] #Remove original columns
+    setDF(test)
+    output <- test
+  }
+  output
 }
 
 #' Get level 1 training and testing data
