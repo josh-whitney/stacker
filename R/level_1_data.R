@@ -50,6 +50,10 @@ get_cv_folds <- function(training_frame, n_folds = 5){
     training_frame <- get_cv_folds(training_frame, n_folds = n_folds)
   train <- as.data.table(training_frame)
   test <- as.data.table(testing_frame)
+  if(n_folds > 1){
+    train_output <- cbind(train[,.(fold_id = fold_id)],
+                          train[,response, with = FALSE])#to hold training set output
+  }
 
   for(i in 1:length(model_wrappers)){
     model_wrapper <- names(model_wrappers)[i] #The name of the wrapper.
@@ -69,8 +73,7 @@ get_cv_folds <- function(training_frame, n_folds = 5){
     #subsequent folds have NA placeholders.  Each time the loop repeats the NA's
     #for the current fold are overwritten (by reference, thanks data.table!).
     #You can watch this process occur with the debugger.
-    if(n_folds > 1)
-      train_output <- train[,.(fold_id = fold_id)] #to hold training set output
+
     for(fold in 1:n_folds){
       #If n_folds is at least two, the validation frame will be the fold
       #outside the training set.
