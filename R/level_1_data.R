@@ -12,8 +12,11 @@
 #' @export
 #'
 #' @examples
+#' get_cv_folds(iris, 5)
 get_cv_folds <- function(training_frame, n_folds){
   #Check to see if training_frame already has a CV column.  If not, add one.
+  if(!n_folds > 1 | !is.integer(n_folds))
+    stop("n_folds must be an integer greater than 1.")
   if(is.null(attributes(training_frame)$cv_column)){
     num_obs <- nrow(training_frame)
     # Cross-validation folds
@@ -101,10 +104,11 @@ get_cv_folds <- function(training_frame, n_folds){
 #' @param training_frame
 #' @param testing_frame
 #' @param response string, name of the response column
-#' @param model_wrappers named vector of functions, names are optional, and
+#' @param model_wrappers (named) vector or list of functions. Names are optional, and
 #' in their absence names will be automatically generated.  See details below
 #' for defining model wrappers.
-#' @param n_folds
+#' @param n_folds integer, number of cross-validation folds.  May be omitted if
+#' training_frame already contains a fold column defined by get_cv_folds
 #'
 #' @return
 #' @export
@@ -115,8 +119,17 @@ get_level_1_data <- function(training_frame,
                              response,
                              model_wrappers,
                              n_folds = 5){
-  if(!n_folds > 1)
+  if(is.null(attributes(training_frame)$cv_column) & !n_folds > 1)
     stop("n_folds must be at least 2 for stacking to work correctly.")
+  #Check for a folds column in training frame and use that instead of making a
+  #new one.
+  if(!is.null(attributes(training_frame)$cv_column)){
+    print(paste("Detected a cv fold column already present in training_frame. Ignoring n_folds argument and using",
+                attributes(training_frame)$cv_column,
+                "as the folds column."))
+    #Get the number of folds previously defined.
+    n_folds <- max(training_frame[[attributes(training_frame)$cv_column]])
+  }
   level_1_training <- .get_level_1_data(training_frame =  training_frame,
                                         response = response,
                                         model_wrappers = model_wrappers,
