@@ -52,6 +52,7 @@ get_cv_folds <- function(training_frame, n_folds){
   test <- as.data.table(testing_frame)
 
   for(model_wrapper in model_wrappers){
+    wrapper_function <- match.fun(model_wrapper)
     #track progress with bar.
     if(n_folds != 1){
       cat(paste0("Cross validating and training ", model_wrapper,
@@ -60,7 +61,6 @@ get_cv_folds <- function(training_frame, n_folds){
       cat(paste0("Generating level 1 data for test set using ", model_wrapper, "\n"))
     }
     progress <- txtProgressBar(max = n_folds, width = n_folds, style = 3)
-
 
     #Each loop adds predictions for the fold under consideration, while all
     #subsequent folds have NA placeholders.  Each time the loop repeats the NA's
@@ -71,11 +71,11 @@ get_cv_folds <- function(training_frame, n_folds){
       #outside the training set.
       if(n_folds != 1){
         train[fold_id == fold,
-              (model_wrapper) := match.fun(model_wrapper)(training_frame = train[fold_id != fold,],
-                                                          validation_frame = train[fold_id == fold,])]
+              (model_wrapper) := wrapper_function(training_frame = train[fold_id != fold,],
+                                                  validation_frame = train[fold_id == fold,])]
       } else {
-        test[, (model_wrapper) := match.fun(model_wrapper)(training_frame = train,
-                                                           validation_frame = testing_frame)]
+        test[, (model_wrapper) := wrapper_function(training_frame = train,
+                                                   validation_frame = testing_frame)]
       }
       setTxtProgressBar(progress, fold)
     }
