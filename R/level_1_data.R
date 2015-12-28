@@ -69,15 +69,18 @@ get_cv_folds <- function(training_frame, n_folds = 5){
     #subsequent folds have NA placeholders.  Each time the loop repeats the NA's
     #for the current fold are overwritten (by reference, thanks data.table!).
     #You can watch this process occur with the debugger.
+    if(n_folds > 1)
+      train_output <- train[,.(fold_id = fold_id)] #to hold training set output
     for(fold in 1:n_folds){
       #If n_folds is at least two, the validation frame will be the fold
       #outside the training set.
       if(n_folds != 1){
-        train[fold_id == fold,
-              (model_wrapper) := wrapper_function(training_frame = train[fold_id != fold,
-                                                                         !"fold_id", with = FALSE], #remove fold_id column
-                                                  validation_frame = train[fold_id == fold,
-                                                                           !"fold_id", with = FALSE])] #remove fold_id column
+        train_output[fold_id == fold,
+                     (model_wrapper) :=
+                       wrapper_function(training_frame =
+                                          train[fold_id != fold,][,!"fold_id", with = FALSE], #remove fold_id column
+                                        validation_frame =
+                                          train[fold_id == fold,][,!"fold_id", with = FALSE])] #remove fold_id column
       } else {
         test[, (model_wrapper) := wrapper_function(training_frame = train[,!"fold_id", with = FALSE],
                                                    validation_frame = testing_frame)]
@@ -87,9 +90,9 @@ get_cv_folds <- function(training_frame, n_folds = 5){
     close(progress)
   }
   if(n_folds != 1){
-    train[,(setdiff(names(training_frame), response)) := NULL] #Remove original columns
-    setDF(train)
-    output <- train
+    train_output[, fold_id := NULL] #Remove fold_id column
+    setDF(train_output)
+    output <- train_output
   } else {
     test[,(names(testing_frame)) := NULL] #Remove original columns
     setDF(test)

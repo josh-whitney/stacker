@@ -44,8 +44,8 @@ iris_model_wrapper <- function(training_frame, validation_frame){
  predict(linear_model, newdata = validation_frame) #the output
 }
 
-iris_training <- iris[1:100,]
-iris_testing <- iris[101:150,]
+iris_training <- iris[1:100,-5]
+iris_testing <- iris[101:150,-5]
 
 #define a CV fold column for iris_training so we can use it for all future
 #model wrappers.
