@@ -11,7 +11,7 @@ test_that("Training and testing sets for iris have the correct dimension",{
   testing <- iris[!iris$Species %in% c("virginica", "versicolor"),]
   lv1 <- get_level_1_data(training, testing_frame = testing, response = "Petal.Length",
                           n_folds = 5,
-                          model_wrappers = c("model_wrapper_1", "model_wrapper_2"))
+                          model_wrappers = c(model_wrapper_1, model_wrapper_2))
   expect_equal(dim(lv1$level_1_training), c(100,3))
   expect_equal(dim(lv1$level_1_testing), c(50,3))
 })

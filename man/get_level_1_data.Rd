@@ -8,6 +8,12 @@ get_level_1_data(training_frame, testing_frame, response, model_wrappers,
   n_folds = 5)
 }
 \arguments{
+\item{response}{string, name of the response column}
+
+\item{model_wrappers}{named vector of functions, names are optional, and
+in their absence names will be automatically generated.  See details below
+for defining model wrappers.}
+
 \item{n_folds}{}
 }
 \description{

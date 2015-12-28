@@ -54,8 +54,8 @@ get_cv_folds <- function(training_frame, n_folds){
   for(i in 1:length(model_wrappers)){
     model_wrapper <- names(model_wrappers)[i] #The name of the wrapper.
     if(is.null(model_wrapper))
-      model_wrapper <- paste0("Model", i)
-    wrapper_function <- model_wrappers[i] #The wrapper itself.
+      model_wrapper <- paste0("Model_", i)
+    wrapper_function <- model_wrappers[[i]] #The wrapper itself.
     #track progress with bar.
     if(n_folds != 1){
       cat(paste0("Cross validating and training ", model_wrapper,
@@ -101,7 +101,9 @@ get_cv_folds <- function(training_frame, n_folds){
 #' @param training_frame
 #' @param testing_frame
 #' @param response string, name of the response column
-#' @param model_wrappers
+#' @param model_wrappers named vector of functions, names are optional, and
+#' in their absence names will be automatically generated.  See details below
+#' for defining model wrappers.
 #' @param n_folds
 #'
 #' @return
