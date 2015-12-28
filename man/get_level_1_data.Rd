@@ -14,10 +14,48 @@ get_level_1_data(training_frame, response, model_wrappers,
 in their absence names will be automatically generated.  See details below
 for defining model wrappers.}
 
+\item{testing_frame}{data.frame, optional.  If present, each model_wrapper
+is trained on the entire training_frame and then used to predict on the
+testing_frame.}
+
 \item{n_folds}{integer, number of cross-validation folds.  May be omitted if
 training_frame already contains a fold column defined by get_cv_folds}
 }
+\value{
+a list containing two data frames.  The first is the level 1
+training data, the second is the level 1 data for the testing set.
+}
 \description{
 Get level 1 training and testing data
+}
+\details{
+The level 1 data is always generated on data not seen by the
+training model.
+
+Each model wrapper is a function that accepts exactly two arguments (training_frame
+and validation_frame) and returns a numeric vector whose length is equal nrow(validation_frame).
+The model wrapper should train on training_frame, predict on validation_frame,
+and output the result of the prediction as a numeric vector.
+}
+\examples{
+#First we define a model wrapper that trains a linear model
+iris_model_wrapper <- function(training_frame, validation_frame){
+ linear_model <- lm(Petal.Length ~ ., data = training_frame)
+ predict(linear_model, newdata = validation_frame) #the output
+}
+
+iris_training <- iris[1:100,]
+iris_testing <- iris[101:150,]
+
+#define a CV fold column for iris_training so we can use it for all future
+#model wrappers.
+iris_training <- get_cv_folds(iris_training, n_folds = 10)
+
+lv1_data <- get_level_1_data(iris_training,
+                             response = "Petal.Length",
+                             model_wrappers = c(iris_model_wrapper = iris_model_wrapper),
+                             testing_frame = iris_testing)
+
+
 }
 

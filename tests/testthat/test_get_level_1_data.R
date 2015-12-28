@@ -35,3 +35,20 @@ test_that("If training_frame already has a cv column, that is used instead of a 
                  "|=====|", fixed = TRUE)
 
 })
+
+test_that("A simple linear model with iris dataset works.",{
+  iris_model_wrapper <- function(training_frame, validation_frame){
+    linear_model <- lm(Petal.Length ~ ., data = training_frame)
+    predict(linear_model, newdata = validation_frame) #the output
+  }
+  iris_training <- iris[1:100,-5]
+  iris_testing <- iris[101:150,-5]
+  #define a CV fold column for iris_training so we can use it for all future
+  #model wrappers.
+  iris_training <- get_cv_folds(iris_training, n_folds = 10)
+  lv1_data <- get_level_1_data(iris_training,
+                               response = "Petal.Length",
+                               model_wrappers = c(iris_model_wrapper = iris_model_wrapper),
+                               testing_frame = iris_testing)
+  expect_false(anyNA(lv1_data$level_1_training))
+})

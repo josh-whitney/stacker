@@ -74,10 +74,12 @@ get_cv_folds <- function(training_frame, n_folds = 5){
       #outside the training set.
       if(n_folds != 1){
         train[fold_id == fold,
-              (model_wrapper) := wrapper_function(training_frame = train[fold_id != fold,],
-                                                  validation_frame = train[fold_id == fold,])]
+              (model_wrapper) := wrapper_function(training_frame = train[fold_id != fold,
+                                                                         !"fold_id", with = FALSE], #remove fold_id column
+                                                  validation_frame = train[fold_id == fold,
+                                                                           !"fold_id", with = FALSE])] #remove fold_id column
       } else {
-        test[, (model_wrapper) := wrapper_function(training_frame = train,
+        test[, (model_wrapper) := wrapper_function(training_frame = train[,!"fold_id", with = FALSE],
                                                    validation_frame = testing_frame)]
       }
       setTxtProgressBar(progress, fold)
@@ -129,8 +131,8 @@ get_cv_folds <- function(training_frame, n_folds = 5){
 #'  predict(linear_model, newdata = validation_frame) #the output
 #' }
 #'
-#' iris_training <- iris[1:100,]
-#' iris_testing <- iris[101:150,]
+#' iris_training <- iris[1:100,-5]
+#' iris_testing <- iris[101:150,-5]
 #'
 #' #define a CV fold column for iris_training so we can use it for all future
 #' #model wrappers.
