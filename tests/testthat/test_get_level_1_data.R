@@ -13,7 +13,7 @@ test_that("Training and testing sets for iris have the correct dimension",{
                           n_folds = 5,
                           model_wrappers = c(model_wrapper_1, model_wrapper_2))
   expect_equal(dim(lv1$level_1_training), c(100,3))
-  expect_equal(dim(lv1$level_1_testing), c(50,3))
+  expect_equal(dim(lv1$level_1_testing), c(50,2))
 })
 
 test_that("An error is thrown when n_folds == 1",{
@@ -22,4 +22,16 @@ test_that("An error is thrown when n_folds == 1",{
   expect_error(get_level_1_data(iris, iris, "Petal.Length", n_folds = 1,
                                 model_wrappers = c(model_wrapper_1)),
                "n_folds must be at least 2 for stacking to work correctly.")
+})
+
+test_that("If training_frame already has a cv column, that is used instead of a new one being defined",{
+  training_frame <- get_cv_folds(iris, n_folds = 5)
+  model_wrapper_1 <- function(training_frame, validation_frame)
+    runif(nrow(validation_frame), 1,2)
+  #Since each tick mark represents a fold, there should be a series of
+  #five tickmarks in the output but not 10
+  expect_output(get_level_1_data(training_frame, model_wrappers = c(model_wrapper_1),
+                                  response = "Petal.Length", n_folds = 10),
+                 "|=====|", fixed = TRUE)
+
 })

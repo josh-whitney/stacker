@@ -4,7 +4,7 @@
 \alias{get_cv_folds}
 \title{Add a cv folds column to a data frame.}
 \usage{
-get_cv_folds(training_frame, n_folds)
+get_cv_folds(training_frame, n_folds = 5)
 }
 \arguments{
 \item{training_frame}{data frame, the frame to which to
@@ -14,12 +14,15 @@ append the cv folds column}
 }
 \value{
 A data frame identical to training frame with one extra column
-called "fold_id" that gives the fold of each column.  Also, the attribute
-"cv_column" is added to indicate that a cv column has been defined.  If
+called "fold_id" that gives the fold of each column.  Also, the attributes
+"cv_column" and "n_folds" are added to indicate that a cv column has been defined.  If
 the "cv_column" attribute is already present, training_frame is returned
 unchanged.
 }
 \description{
 Add a cv folds column to a data frame.
+}
+\examples{
+get_cv_folds(iris, 5)
 }
 

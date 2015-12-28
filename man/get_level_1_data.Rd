@@ -4,17 +4,18 @@
 \alias{get_level_1_data}
 \title{Get level 1 training and testing data}
 \usage{
-get_level_1_data(training_frame, testing_frame, response, model_wrappers,
-  n_folds = 5)
+get_level_1_data(training_frame, response, model_wrappers,
+  testing_frame = NULL, n_folds = 5)
 }
 \arguments{
 \item{response}{string, name of the response column}
 
-\item{model_wrappers}{named vector of functions, names are optional, and
+\item{model_wrappers}{(named) vector or list of functions. Names are optional, and
 in their absence names will be automatically generated.  See details below
 for defining model wrappers.}
 
-\item{n_folds}{}
+\item{n_folds}{integer, number of cross-validation folds.  May be omitted if
+training_frame already contains a fold column defined by get_cv_folds}
 }
 \description{
 Get level 1 training and testing data
