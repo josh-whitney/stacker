@@ -37,6 +37,7 @@ test_that("If training_frame already has a cv column, that is used instead of a 
 })
 
 test_that("A simple linear model with iris dataset works.",{
+  set.seed(1)
   iris_model_wrapper <- function(training_frame, validation_frame){
     linear_model <- lm(Petal.Length ~ ., data = training_frame)
     predict(linear_model, newdata = validation_frame) #the output
@@ -51,4 +52,7 @@ test_that("A simple linear model with iris dataset works.",{
                                model_wrappers = c(iris_model_wrapper = iris_model_wrapper),
                                testing_frame = iris_testing)
   expect_false(anyNA(lv1_data$level_1_training))
+  expect_equal(head(lv1_data$level_1_training$iris_model_wrapper),
+               c(1.415958, 1.521141, 1.354233, 1.367999, 1.311796, 1.756137),
+               tolerance = 1e-6)
 })
