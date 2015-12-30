@@ -125,9 +125,15 @@ get_cv_folds <- function(training_frame, n_folds = 5){
 #' training model.
 #'
 #' Each model wrapper is a function that accepts exactly two arguments (training_frame
-#' and validation_frame) and returns a numeric vector whose length is equal nrow(validation_frame).
+#' and validation_frame) and returns a numeric vector whose length is nrow(validation_frame).
 #' The model wrapper should train on training_frame, predict on validation_frame,
-#' and output the result of the prediction as a numeric vector.
+#' and output the result of the prediction as a numeric vector.  Both training_frame
+#' and validation_frame are data.tables for memory efficiency.  If you're
+#' working with smaller data and do not want or need the power of data.table,
+#' you can work instead with data.frames by calling
+#' training_frame <- as.data.frame(training_frame)
+#' validation_frame <- as.data.frame(validation_frame)
+#' as the first two lines of your wrapper function.
 #' @export
 #'
 #' @examples
