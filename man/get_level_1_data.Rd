@@ -5,7 +5,7 @@
 \title{Get level 1 training and testing data}
 \usage{
 get_level_1_data(training_frame, response, model_wrappers,
-  testing_frame = NULL, n_folds = 5)
+  testing_frame = NULL, n_folds = 5, ...)
 }
 \arguments{
 \item{response}{string, name of the response column}
@@ -20,6 +20,8 @@ testing_frame.}
 
 \item{n_folds}{integer, number of cross-validation folds.  May be omitted if
 training_frame already contains a fold column defined by get_cv_folds}
+
+\item{..., }{arguments passed to the user defined model wrappers.}
 }
 \value{
 a list containing two data frames.  The first is the level 1
@@ -36,7 +38,7 @@ Each model wrapper is a function that accepts exactly two arguments (training_fr
 and validation_frame) and returns a numeric vector whose length is nrow(validation_frame).
 The model wrapper should train on training_frame, predict on validation_frame,
 and output the result of the prediction as a numeric vector.  Both training_frame
-and validation_frame are data.tables for memory efficiency.  If you're
+and validation_frame are changed internally to data.tables for memory efficiency.  If you're
 working with smaller data and do not want or need the power of data.table,
 you can work instead with data.frames by calling
 training_frame <- as.data.frame(training_frame)

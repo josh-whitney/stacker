@@ -56,3 +56,18 @@ test_that("A simple linear model with iris dataset works.",{
                c(1.415958, 1.521141, 1.354233, 1.367999, 1.311796, 1.756137),
                tolerance = 1e-6)
 })
+
+test_that("... argument to get_level_1_data works correctly", {
+  test_model_wrapper <- function(training_frame, validation_frame,
+                                 check_dots){
+    output <- rep(check_dots, times = nrow(validation_frame))
+  }
+  iris_training <- iris[1:100,-5]
+  iris_testing <- iris[101:150,-5]
+  level_1 <- get_level_1_data(iris_training, response = "Petal.Length",
+                              model_wrappers = c(test_wrapper = test_model_wrapper),
+                              testing_frame = iris_testing,
+                              check_dots = 1)
+  expect_equal(level_1$level_1_training$test_wrapper, rep(1, 100))
+  expect_equal(level_1$level_1_testing$test_wrapper, rep(1, 50))
+})
