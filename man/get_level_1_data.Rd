@@ -21,7 +21,7 @@ testing_frame.}
 \item{n_folds}{integer, number of cross-validation folds.  May be omitted if
 training_frame already contains a fold column defined by get_cv_folds}
 
-\item{..., }{arguments passed to the user defined model wrappers.}
+\item{...}{arguments passed to the user defined model wrappers.}
 }
 \value{
 a list containing two data frames.  The first is the level 1
@@ -34,8 +34,10 @@ Get level 1 training and testing data
 The level 1 data is always generated on data not seen by the
 training model.
 
-Each model wrapper is a function that accepts exactly two arguments (training_frame
+Each model wrapper is a function that accepts at least two arguments (training_frame
 and validation_frame) and returns a numeric vector whose length is nrow(validation_frame).
+Other arguments may exist, but both training_frame and validation_frame
+must be present for the wrapper to work correctly.
 The model wrapper should train on training_frame, predict on validation_frame,
 and output the result of the prediction as a numeric vector.  Both training_frame
 and validation_frame are changed internally to data.tables for memory efficiency.  If you're
