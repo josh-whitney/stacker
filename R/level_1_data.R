@@ -38,7 +38,8 @@ get_cv_folds <- function(training_frame, n_folds = 5){
                               response,
                               model_wrappers,
                               testing_frame = NULL,
-                              n_folds = 5){
+                              n_folds = 5,
+                              ...){
   #We assume that if n_folds == 1, that the only reasonable explanation is that
   #the validation from should be testing_frame, otherwise having 1-fold cross
   #validation makes no sense.
@@ -83,10 +84,12 @@ get_cv_folds <- function(training_frame, n_folds = 5){
                        wrapper_function(training_frame =
                                           train[fold_id != fold,][,!"fold_id", with = FALSE], #remove fold_id column
                                         validation_frame =
-                                          train[fold_id == fold,][,!"fold_id", with = FALSE])] #remove fold_id column
+                                          train[fold_id == fold,][,!"fold_id", with = FALSE],
+                                        ...)] #remove fold_id column
       } else {
         test[, (model_wrapper) := wrapper_function(training_frame = train[,!"fold_id", with = FALSE],
-                                                   validation_frame = testing_frame)]
+                                                   validation_frame = testing_frame,
+                                                   ...)]
       }
       setTxtProgressBar(progress, fold)
     }
@@ -116,6 +119,7 @@ get_cv_folds <- function(training_frame, n_folds = 5){
 #' testing_frame.
 #' @param n_folds integer, number of cross-validation folds.  May be omitted if
 #' training_frame already contains a fold column defined by get_cv_folds
+#' @param ..., arguments passed to the user defined model wrappers.
 #'
 #' @import data.table
 #' @return a list containing two data frames.  The first is the level 1
@@ -128,7 +132,7 @@ get_cv_folds <- function(training_frame, n_folds = 5){
 #' and validation_frame) and returns a numeric vector whose length is nrow(validation_frame).
 #' The model wrapper should train on training_frame, predict on validation_frame,
 #' and output the result of the prediction as a numeric vector.  Both training_frame
-#' and validation_frame are data.tables for memory efficiency.  If you're
+#' and validation_frame are changed internally to data.tables for memory efficiency.  If you're
 #' working with smaller data and do not want or need the power of data.table,
 #' you can work instead with data.frames by calling
 #' training_frame <- as.data.frame(training_frame)
@@ -160,7 +164,8 @@ get_level_1_data <- function(training_frame,
                              response,
                              model_wrappers,
                              testing_frame = NULL,
-                             n_folds = 5){
+                             n_folds = 5,
+                             ...){
   if(is.null(attributes(training_frame)$cv_column) & !n_folds > 1)
     stop("n_folds must be at least 2 for stacking to work correctly.")
   #Check for a folds column in training frame and use that instead of making a
@@ -175,7 +180,8 @@ get_level_1_data <- function(training_frame,
   level_1_training <- .get_level_1_data(training_frame =  training_frame,
                                         response = response,
                                         model_wrappers = model_wrappers,
-                                        n_folds = n_folds)
+                                        n_folds = n_folds,
+                                        ...)
   if(is.null(testing_frame))
     level_1_testing <- NULL
   else{
@@ -183,7 +189,8 @@ get_level_1_data <- function(training_frame,
                                          response = response,
                                          model_wrappers = model_wrappers,
                                          n_folds = 1,
-                                         testing_frame = testing_frame)
+                                         testing_frame = testing_frame,
+                                         ...)
   }
   list(level_1_training = level_1_training, level_1_testing = level_1_testing)
 }
