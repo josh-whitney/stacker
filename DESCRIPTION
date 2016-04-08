@@ -1,13 +1,15 @@
 Package: stacker
 Type: Package
-Title: What the Package Does (Title Case)
+Title: A package to build stacked ensembles
 Version: 0.1
 Date: 2015-12-15
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
-Imports: 
+Author: Josh Whitney
+Maintainer: Josh Whitney <josh.r.whitney@gmail.com>
+Description: This package allows you to build stacked ensembles built on
+  level 0 models from any R package, or even Python code (with rPython). It is
+  extemely useful for building a stack for Kaggle competitions.
+License: MIT
+Imports:
     data.table
 LazyData: TRUE
 RoxygenNote: 5.0.1
